@@ -16,6 +16,8 @@ FROM n8nio/base:${NODE_VERSION} AS builder
 
 WORKDIR /usr/src/app
 
+RUN npm install -g pnpm
+
 # リポジトリ全体をビルダーステージにコピーします。
 COPY . .
 
