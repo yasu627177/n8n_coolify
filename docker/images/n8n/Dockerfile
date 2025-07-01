@@ -9,12 +9,26 @@ ARG TARGETPLATFORM
 FROM n8nio/base:${NODE_VERSION} AS system-deps
 
 # ==============================================================================
+# ADD 1,5: Source Code Builder (ここから追加)
+# このステージでソースコードをビルドし、'compiled' ディレクトリを生成します。
+# ==============================================================================
+FROM n8nio/base:${NODE_VERSION} AS builder
+
+WORKDIR /usr/src/app
+
+# リポジトリ全体をビルダーステージにコピーします。
+COPY . .
+
+# 依存関係をインストールし、n8nをビルドします。
+RUN pnpm install --frozen-lockfile --ignore-scripts && \
+    pnpm run build
+
+# ==============================================================================
 # STAGE 2: Application Artifact Processor
 # ==============================================================================
 FROM alpine:3.22.0 AS app-artifact-processor
 
-COPY ./compiled /app/
-
+COPY --from=builder /usr/src/app/packages/cli/compiled /app/
 # ==============================================================================
 # STAGE 3: Task Runner Launcher
 # ==============================================================================
