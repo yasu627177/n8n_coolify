@@ -16,13 +16,17 @@ FROM n8nio/base:${NODE_VERSION} AS builder
 
 WORKDIR /usr/src/app
 
+# SQLite3のビルドに必要な依存関係を追加
+RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
+
 RUN npm install -g pnpm
 
 # リポジトリ全体をビルダーステージにコピーします。
 COPY . .
 
 # 依存関係をインストールし、n8nをビルドします。
-RUN pnpm install --frozen-lockfile --ignore-scripts && \
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+RUN pnpm install --frozen-lockfile && \
     pnpm run build
 
 # ==============================================================================
