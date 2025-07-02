@@ -78,8 +78,12 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: . # Dockerfileがあるディレクトリ（リポジトリのルート）
-          push: true # Docker Hubにプッシュする
-          tags: yasu627177/n8n-custom:latest # !!!ここをあなたのDocker Hubユーザー名に置き換える!!!
-          cache-from: type=gha # GitHub Actionsのキャッシュを利用してビルドを高速化
-          cache-to: type=gha,mode=max # ビルド結果をGitHub Actionsのキャッシュに保存
+          context: ./docker/images/n8n # ここをあなたの Dockerfile が存在する実際のパスに変更します
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/n8n-custom:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          load: false
+          no-cache: false
+          pull: false
+          github-token: ${{ secrets.GITHUB_TOKEN }}
