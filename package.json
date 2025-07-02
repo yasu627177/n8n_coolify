@@ -84,12 +84,10 @@
       "sqlite3"
     ],
     "overrides": { 
-      // 既存のオーバーライドはそのまま残し、以下を追加
-      "eslint": "8.x.x", // eslint@9.29.0 の代わりに8.x.x系を使用
-      "@vitest/coverage-v8": { // vitest@3.1.3に合うようにvitest@3.2.4を回避
-      "vitest": "3.1.3" // vitestをプロジェクトにある3.1.3に固定
+      "eslint": "8.x.x", 
+      "@vitest/coverage-v8": 
+      "vitest": "3.1.3"
       },
-      // ... 既存のオーバーライドの残りの部分 ...
       "@azure/identity": "^4.3.0",
       "@types/node": "^20.17.50",
       "chokidar": "^4.0.1",
