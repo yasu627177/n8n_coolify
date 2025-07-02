@@ -78,7 +78,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./docker/images/n8n # またはあなたの Dockerfile の実際のパス
+          context: . # ここをリポジトリのルートに戻します
+          file: ./docker/images/n8n/Dockerfile # Dockerfileの正確なパスを明示的に指定します
           push: true
           tags: yasu627177/n8n-custom:latest # ここが重要です
           cache-from: type=gha
