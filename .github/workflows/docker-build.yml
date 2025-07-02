@@ -76,7 +76,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and push Docker image
-          uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v5
         with:
           context: ./docker/images/n8n # またはあなたの Dockerfile の実際のパス
           push: true
