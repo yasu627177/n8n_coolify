@@ -20,15 +20,13 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Setup pnpm # ★ 修正: cache関連の引数を削除
+      - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
           version: 8 # pnpmのバージョンを指定
           run_install: false # 依存関係のインストールは次のステップで行うためfalse
-          # cache: 'pnpm' ← 削除
-          # cache-dependency-path: '**/pnpm-lock.yaml' ← 削除
 
-      - name: Cache pnpm modules # ★ 新しく追加するキャッシュステップ
+      - name: Cache pnpm modules
         uses: actions/cache@v4
         with:
           path: ~/.pnpm-store # pnpmのグローバルストアのパス
@@ -36,7 +34,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-
 
-      - name: Debug pnpm PATH # デバッグステップは引き続き残しておきます
+      - name: Debug pnpm PATH # ★ 修正: ls コマンドの後に || true を追加
         run: |
           echo "Current PATH: $PATH"
           echo "Attempting to find pnpm with 'which pnpm':"
@@ -44,11 +42,11 @@ jobs:
           echo "Attempting to run 'pnpm -v' directly:"
           pnpm -v || echo "  'pnpm -v' command failed."
           echo "Checking common pnpm installation locations:"
-          ls -l /usr/local/bin/pnpm || echo "  /usr/local/bin/pnpm not found."
-          ls -l ~/.npm-global/bin/pnpm || echo "  ~/.npm-global/bin/pnpm not found."
+          ls -l /usr/local/bin/pnpm || echo "  /usr/local/bin/pnpm not found." || true # ここを修正
+          ls -l ~/.npm-global/bin/pnpm || echo "  ~/.npm-global/bin/pnpm not found." || true # ここを修正
           GLOBAL_NPM_BIN=$(npm bin -g)
           echo "  npm global bin path: $GLOBAL_NPM_BIN"
-          ls -l "$GLOBAL_NPM_BIN/pnpm" || echo "  $GLOBAL_NPM_BIN/pnpm not found."
+          ls -l "$GLOBAL_NPM_BIN/pnpm" || echo "  $GLOBAL_NPM_BIN/pnpm not found." || true # ここを修正
 
       - name: Install n8n dependencies
         run: pnpm install --frozen-lockfile
