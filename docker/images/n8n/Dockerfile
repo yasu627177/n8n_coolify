@@ -32,7 +32,7 @@ ENV MAX_WORKERS="1"
 # pnpmの設定とインストール
 RUN pnpm config set network-timeout 100000
 RUN pnpm store prune
-# RUN pnpm update  # catalog問題を解決
+RUN pnpm update  # catalog問題を解決
 RUN pnpm install --no-frozen-lockfile
 RUN echo "===== pnpm install completed ====="
 RUN pnpm run build
