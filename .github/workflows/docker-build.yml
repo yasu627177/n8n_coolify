@@ -22,14 +22,11 @@ jobs:
           cache: 'pnpm' # pnpmの依存関係キャッシュを有効にする
           cache-dependency-path: '**/pnpm-lock.yaml'
 
-      - name: Install pnpm
-        run: |
-          corepack enable pnpm
-          npm install -g pnpm # pnpmをグローバルにインストール
-          GLOBAL_NPM_BIN=$(npm bin -g)
-          echo "Adding $GLOBAL_NPM_BIN to PATH for subsequent steps"
-          echo "$GLOBAL_NPM_BIN" >> $GITHUB_PATH # ★ 修正: グローバルnpm binパスをPATHに追加
-          pnpm -v # 念のため、ここでpnpmが認識されるか確認
+      - name: Setup pnpm # ★ 修正: pnpm/action-setup を使用
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8 # pnpmのバージョンを指定
+          run_install: false # 依存関係のインストールは次のステップで行うためfalse
 
       - name: Install n8n dependencies
         run: pnpm install --frozen-lockfile
