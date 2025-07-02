@@ -25,9 +25,13 @@ RUN npm install -g pnpm
 COPY . .
 
 # 依存関係をインストールし、n8nをビルドします。
-ENV NODE_OPTIONS="--max-old-space-size=2048"
-RUN pnpm install --frozen-lockfile && \
-    pnpm run build
+ENV NODE_OPTIONS="--max-old-space-size=1536"
+ENV PNPM_BUILD_CONCURRENCY="1"
+ENV MAX_WORKERS="1"
+
+RUN pnpm install --frozen-lockfile
+RUN echo "===== pnpm install completed ====="
+RUN pnpm run build
 
 # ==============================================================================
 # STAGE 2: Application Artifact Processor
