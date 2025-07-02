@@ -25,7 +25,11 @@ jobs:
       - name: Install pnpm
         run: |
           corepack enable pnpm
-          npm install -g pnpm # ★ 追加: pnpmをグローバルにインストールしてパスを通す
+          npm install -g pnpm # pnpmをグローバルにインストール
+          GLOBAL_NPM_BIN=$(npm bin -g)
+          echo "Adding $GLOBAL_NPM_BIN to PATH for subsequent steps"
+          echo "$GLOBAL_NPM_BIN" >> $GITHUB_PATH # ★ 修正: グローバルnpm binパスをPATHに追加
+          pnpm -v # 念のため、ここでpnpmが認識されるか確認
 
       - name: Install n8n dependencies
         run: pnpm install --frozen-lockfile
