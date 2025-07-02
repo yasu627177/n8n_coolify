@@ -81,8 +81,8 @@ WORKDIR /home/node
 
 COPY --from=app-artifact-processor /app /usr/local/lib/node_modules/n8n
 COPY --from=launcher-downloader /launcher-bin/* /usr/local/bin/
-COPY docker/images/n8n/docker-entrypoint.sh /
-COPY docker/images/n8n/n8n-task-runners.json /etc/n8n-task-runners.json
+COPY docker-entrypoint.sh /
+COPY n8n-task-runners.json /etc/n8n-task-runners.json
 
 RUN cd /usr/local/lib/node_modules/n8n && \
 		npm rebuild sqlite3 && \
