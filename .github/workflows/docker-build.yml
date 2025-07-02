@@ -41,12 +41,7 @@ jobs:
           which pnpm || echo "  'which pnpm' did not find pnpm"
           echo "Attempting to run 'pnpm -v' directly:"
           pnpm -v || echo "  'pnpm -v' command failed."
-          echo "Checking common pnpm installation locations:"
-          ls -l /usr/local/bin/pnpm || echo "  /usr/local/bin/pnpm not found." || true
-          ls -l ~/.npm-global/bin/pnpm || echo "  ~/.npm-global/bin/pnpm not found." || true
-          GLOBAL_NPM_BIN=$(npm bin -g)
-          echo "  npm global bin path: $GLOBAL_NPM_BIN"
-          ls -l "$GLOBAL_NPM_BIN/pnpm" || echo "  $GLOBAL_NPM_BIN/pnpm not found." || true
+          echo "pnpm debug checks completed."
 
 
       - name: Install n8n dependencies
