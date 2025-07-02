@@ -1,0 +1,64 @@
+name: Build and Push Custom n8n Docker Image to Docker Hub
+
+on:
+  push:
+    branches:
+      - main # mainブランチにプッシュされた時にこのワークフローを実行
+  workflow_dispatch: # GitHubのActionsタブから手動で実行できるようにする（テストに便利）
+
+jobs:
+  build:
+    runs-on: ubuntu-latest # GitHub Actionsの実行環境
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4 # リポジトリのコードをチェックアウト
+
+      # --- ここから N8Nソースコードのビルドステップ ---
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22' # DockerfileのARG NODE_VERSIONと合わせる
+          cache: 'pnpm' # pnpmの依存関係キャッシュを有効にする
+          cache-dependency-path: '**/pnpm-lock.yaml'
+
+      - name: Install pnpm
+        run: corepack enable pnpm
+
+      - name: Install n8n dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build n8n source code
+        run: pnpm build
+
+      - name: Move compiled artifacts to expected location
+        run: |
+          if [ -d "packages/main/compiled" ]; then
+            echo "Moving compiled artifacts from packages/main/compiled to ./compiled"
+            mv packages/main/compiled ./compiled
+          else
+            echo "Warning: packages/main/compiled not found. Assuming compiled artifacts are already in ./compiled or not needed by this Dockerfile."
+          fi
+
+      # --- N8Nソースコードのビルドステップ終了 ---
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: . # Dockerfileがあるディレクトリ（リポジトリのルート）
+          push: true # Docker Hubにプッシュする
+          tags: yasu627177/n8n-custom:latest # !!!ここをあなたのDocker Hubユーザー名に置き換える!!!
+          cache-from: type=gha # GitHub Actionsのキャッシュを利用してビルドを高速化
+          cache-to: type=gha,mode=max # ビルド結果をGitHub Actionsのキャッシュに保存
