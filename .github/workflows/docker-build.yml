@@ -76,11 +76,11 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+          uses: docker/build-push-action@v5
         with:
-          context: ./docker/images/n8n # ここをあなたの Dockerfile が存在する実際のパスに変更します
+          context: ./docker/images/n8n # またはあなたの Dockerfile の実際のパス
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/n8n-custom:latest
+          tags: yasu627177/n8n-custom:latest # ここが重要です
           cache-from: type=gha
           cache-to: type=gha,mode=max
           load: false
