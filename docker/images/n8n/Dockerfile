@@ -25,13 +25,14 @@ RUN npm install -g pnpm
 COPY . .
 
 # 依存関係をインストールし、n8nをビルドします。
-ENV NODE_OPTIONS="--max-old-space-size=4096"
+ENV NODE_OPTIONS="--max-old-space-size=8192"
 ENV PNPM_BUILD_CONCURRENCY="1"
 ENV MAX_WORKERS="1"
 
 # pnpmの設定とインストール
-RUN pnpm config set network-timeout 300000
+RUN pnpm config set network-timeout 600000
 RUN pnpm store prune
+RUN pnpm update  # catalog問題を解決
 RUN pnpm install --no-frozen-lockfile
 RUN echo "===== pnpm install completed ====="
 RUN pnpm run build
