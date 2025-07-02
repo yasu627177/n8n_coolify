@@ -15,18 +15,34 @@ jobs:
         uses: actions/checkout@v4 # リポジトリのコードをチェックアウト
 
       # --- ここから N8Nソースコードのビルドステップ ---
-      - name: Set up Node.js 22
+      - name: Set up Node.js 22 # ★ 修正: pnpm関連のキャッシュ設定を削除
         uses: actions/setup-node@v4
         with:
-          node-version: '22' # DockerfileのARG NODE_VERSIONと合わせる
-          cache: 'pnpm' # pnpmの依存関係キャッシュを有効にする
-          cache-dependency-path: '**/pnpm-lock.yaml'
+          node-version: '22'
+          # cache: 'pnpm' ← 削除
+          # cache-dependency-path: '**/pnpm-lock.yaml' ← 削除
 
-      - name: Setup pnpm # ★ 修正: pnpm/action-setup を使用
+      - name: Setup pnpm # ★ 修正: pnpmのインストールとキャッシュをここで処理
         uses: pnpm/action-setup@v2
         with:
           version: 8 # pnpmのバージョンを指定
           run_install: false # 依存関係のインストールは次のステップで行うためfalse
+          cache: 'pnpm' # ★ 追加: pnpmのキャッシュをここで有効化
+          cache-dependency-path: '**/pnpm-lock.yaml' # ★ 追加: pnpmキャッシュの依存パスを指定
+
+      - name: Debug pnpm PATH # デバッグステップは残しておきます
+        run: |
+          echo "Current PATH: $PATH"
+          echo "Attempting to find pnpm with 'which pnpm':"
+          which pnpm || echo "  'which pnpm' did not find pnpm"
+          echo "Attempting to run 'pnpm -v' directly:"
+          pnpm -v || echo "  'pnpm -v' command failed."
+          echo "Checking common pnpm installation locations:"
+          ls -l /usr/local/bin/pnpm || echo "  /usr/local/bin/pnpm not found."
+          ls -l ~/.npm-global/bin/pnpm || echo "  ~/.npm-global/bin/pnpm not found."
+          GLOBAL_NPM_BIN=$(npm bin -g)
+          echo "  npm global bin path: $GLOBAL_NPM_BIN"
+          ls -l "$GLOBAL_NPM_BIN/pnpm" || echo "  $GLOBAL_NPM_BIN/pnpm not found."
 
       - name: Install n8n dependencies
         run: pnpm install --frozen-lockfile
