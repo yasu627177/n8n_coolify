@@ -25,7 +25,7 @@ RUN npm install -g pnpm
 COPY . .
 
 # 依存関係をインストールし、n8nをビルドします。
-ENV NODE_OPTIONS="--max-old-space-size=4096"
+ENV NODE_OPTIONS="--max-old-space-size=2048"
 RUN pnpm install --frozen-lockfile && \
     pnpm run build
 
