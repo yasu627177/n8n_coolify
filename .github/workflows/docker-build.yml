@@ -47,7 +47,7 @@ jobs:
 
 
       - name: Install n8n dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
 
       - name: Build n8n source code
         run: pnpm build
