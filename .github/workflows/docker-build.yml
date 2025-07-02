@@ -15,22 +15,28 @@ jobs:
         uses: actions/checkout@v4 # リポジトリのコードをチェックアウト
 
       # --- ここから N8Nソースコードのビルドステップ ---
-      - name: Set up Node.js 22 # ★ 修正: pnpm関連のキャッシュ設定を削除
+      - name: Set up Node.js 22
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          # cache: 'pnpm' ← 削除
-          # cache-dependency-path: '**/pnpm-lock.yaml' ← 削除
 
-      - name: Setup pnpm # ★ 修正: pnpmのインストールとキャッシュをここで処理
+      - name: Setup pnpm # ★ 修正: cache関連の引数を削除
         uses: pnpm/action-setup@v2
         with:
           version: 8 # pnpmのバージョンを指定
           run_install: false # 依存関係のインストールは次のステップで行うためfalse
-          cache: 'pnpm' # ★ 追加: pnpmのキャッシュをここで有効化
-          cache-dependency-path: '**/pnpm-lock.yaml' # ★ 追加: pnpmキャッシュの依存パスを指定
+          # cache: 'pnpm' ← 削除
+          # cache-dependency-path: '**/pnpm-lock.yaml' ← 削除
 
-      - name: Debug pnpm PATH # デバッグステップは残しておきます
+      - name: Cache pnpm modules # ★ 新しく追加するキャッシュステップ
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store # pnpmのグローバルストアのパス
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      - name: Debug pnpm PATH # デバッグステップは引き続き残しておきます
         run: |
           echo "Current PATH: $PATH"
           echo "Attempting to find pnpm with 'which pnpm':"
