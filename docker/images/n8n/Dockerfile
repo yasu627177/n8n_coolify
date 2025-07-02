@@ -17,7 +17,7 @@ FROM n8nio/base:${NODE_VERSION} AS builder
 WORKDIR /usr/src/app
 
 # SQLite3のビルドに必要な依存関係を追加
-RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache python3 make g++ sqlite-dev
 
 RUN npm install -g pnpm
 
