@@ -1,0 +1,58 @@
+name: Build and Push n8n Custom Image
+
+on:
+  push:
+    branches: [ main, develop ] # mainとdevelopブランチへのプッシュでトリガー
+  pull_request:
+    branches: [ main ] # mainブランチへのプルリクエストでトリガー
+  workflow_dispatch: # 手動でのワークフロー実行を可能にする
+
+env:
+  REGISTRY: docker.io
+  IMAGE_NAME: yasu627177/n8n-custom # !!! ここをあなたのDocker Hubユーザー名/リポジトリ名に置き換えてください !!!
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest # ビルドを実行するOS
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 履歴全体をフェッチ（タグメタデータ抽出に必要）
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3 # Docker Buildxのセットアップ
+
+      - name: Log in to Docker Hub
+        if: github.event_name != 'pull_request' # プルリクエスト以外の場合のみログイン
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.DOCKER_HUB_USERNAME }} # GitHub Secretsを使用
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }} # GitHub Secretsを使用
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5 # イメージタグを自動生成
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5 # Dockerイメージのビルドとプッシュ
+        with:
+          context: . # Dockerfileがあるディレクトリ (プロジェクトルート)
+          file: ./docker/custom/Dockerfile.production # ★変更点: Dockerfileの新しいパス★
+          platforms: linux/amd64,linux/arm64 # ビルドするプラットフォーム
+          push: ${{ github.event_name != 'pull_request' }} # プルリクエスト以外の場合のみプッシュ
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha # GitHub Actionsキャッシュを使用
+          cache-to: type=gha,mode=max # GitHub Actionsキャッシュに保存
+          build-args: | # ビルド引数を渡す必要がある場合
+            BUILDKIT_INLINE_CACHE=1

@@ -1,0 +1,13 @@
+FROM yasu627177/n8n-custom:latest # !!! ここをあなたのDocker Hubユーザー名/リポジトリ名に置き換えてください !!!
+
+# Coolify用の環境変数設定（デプロイ時にCoolifyで設定することも可能ですが、Dockerfileに含めることもできます）
+ENV NODE_ENV=production
+ENV DB_TYPE=postgresdb
+ENV N8N_PROTOCOL=https
+ENV WEBHOOK_URL=http://lscg8kgsggkcg0gcwg44o4gg.162.43.6.113.sslip.io # !!! あなたのn8nインスタンスのURLに置き換えてください !!!
+
+# ポート設定
+EXPOSE 5678
+
+# エントリーポイント
+CMD ["pnpm", "start"]

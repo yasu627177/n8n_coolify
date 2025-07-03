@@ -1,0 +1,59 @@
+# ビルドステージ
+FROM node:22-alpine AS builder
+
+# 作業ディレクトリ設定
+WORKDIR /app
+
+# pnpmのインストールとバージョン固定（推奨）
+# package.jsonのengines.pnpmとpackageManagerフィールドに合わせてバージョンを指定
+RUN npm install -g pnpm@10.12.1
+
+# package.jsonとpnpm-lock.yamlをコピー（キャッシュ最適化のため先に行う）
+COPY package.json pnpm-lock.yaml ./
+
+# 依存関係インストール
+RUN pnpm install --frozen-lockfile
+
+# ソースコードコピー
+COPY . .
+
+# ビルド実行
+RUN pnpm build
+
+# プロダクションステージ
+FROM node:22-alpine AS production
+
+# 作業ディレクトリ設定
+WORKDIR /app
+
+# 必要なシステムパッケージインストール
+# dumb-initとsu-execは、Dockerコンテナでプロセスを適切に管理するために有用です
+RUN apk add --no-cache \
+    dumb-init \
+    su-exec \
+    && npm install -g pnpm@10.12.1 # ここでもpnpmをインストールし、バージョンを固定します
+
+# 本番依存関係のみインストール
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --prod --frozen-lockfile
+
+# ビルド成果物をコピー
+# n8nのビルド成果物が通常これらのパスに生成されることを想定しています
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/packages ./packages
+
+# 実行ユーザー作成（セキュリティ強化のため）
+RUN addgroup -g 1000 n8n && \
+    adduser -u 1000 -G n8n -s /bin/sh -D n8n
+
+# ポート公開
+EXPOSE 5678
+
+# ヘルスチェック（アプリケーションが起動しているか確認）
+HEALTHCHECK --interval=30s --timeout=3s --start-period=60s \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:5678/healthz || exit 1
+
+# エントリーポイント
+USER n8n
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["pnpm", "start"]
